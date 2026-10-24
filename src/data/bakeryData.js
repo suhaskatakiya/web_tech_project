@@ -1,16 +1,20 @@
 /**
- * Seed Data for Golden Crust Bakery
- * This file contains the initial catalog of handcrafted bakery products,
- * initial reviews, and default admin user credentials.
+ * Bakery Data Store (Client-side Data Module)
+ * Contains the catalog of handcrafted bakery products, initial reviews,
+ * and sample orders for the staff kitchen portal.
+ * 
+ * In this Web Technology frontend project, products are stored as structured
+ * JavaScript objects and managed dynamically via React state and LocalStorage.
  */
 
-const seedProducts = [
+export const initialProducts = [
   {
+    _id: "prod_1",
     name: "Artisan Belgian Truffle Cake",
     category: "Cakes",
     price: 28.50,
     originalPrice: 32.00,
-    description: "Layered sponge infused with rich 70% dark Belgian chocolate ganache and cocoa nibs.",
+    description: "Layered sponge infused with rich 70% dark Belgian chocolate ganache and roasted cocoa nibs.",
     image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format&fit=crop&q=80",
     dietary: "Eggless",
     isEggless: true,
@@ -23,11 +27,12 @@ const seedProducts = [
     inStock: true
   },
   {
+    _id: "prod_2",
     name: "Classic Sourdough Boule",
     category: "Breads",
     price: 7.50,
     originalPrice: 9.00,
-    description: "Fermented for 36 hours using our 12-year-old sourdough starter. Crispy crust with an airy crumb.",
+    description: "Fermented for 36 hours using our wild yeast starter. Crackling golden crust with an airy crumb.",
     image: "https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?w=600&auto=format&fit=crop&q=80",
     dietary: "Vegan",
     isEggless: true,
@@ -40,6 +45,7 @@ const seedProducts = [
     inStock: true
   },
   {
+    _id: "prod_3",
     name: "French Golden Butter Croissant",
     category: "Pastries",
     price: 4.25,
@@ -57,6 +63,7 @@ const seedProducts = [
     inStock: true
   },
   {
+    _id: "prod_4",
     name: "Red Velvet Cream Cheese Gateau",
     category: "Cakes",
     price: 26.00,
@@ -74,11 +81,12 @@ const seedProducts = [
     inStock: true
   },
   {
+    _id: "prod_5",
     name: "Rosemary & Sea Salt Focaccia",
     category: "Breads",
     price: 8.00,
     originalPrice: 9.50,
-    description: "Drizzled generously with cold-pressed Tuscan olive oil, fresh rosemary needles, and Maldon sea salt flakes.",
+    description: "Drizzled generously with cold-pressed olive oil, garden rosemary needles, and Maldon sea salt flakes.",
     image: "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=600&auto=format&fit=crop&q=80",
     dietary: "Vegan",
     isEggless: true,
@@ -91,11 +99,12 @@ const seedProducts = [
     inStock: true
   },
   {
+    _id: "prod_6",
     name: "Pistachio Pain au Chocolat",
     category: "Pastries",
     price: 5.50,
     originalPrice: 6.25,
-    description: "Flaky viennoiserie pastry stuffed with bittersweet chocolate batons and topped with crushed Bronte pistachios.",
+    description: "Flaky viennoiserie pastry stuffed with bittersweet chocolate batons and topped with crushed pistachios.",
     image: "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=600&auto=format&fit=crop&q=80",
     dietary: "Regular",
     isEggless: false,
@@ -108,6 +117,7 @@ const seedProducts = [
     inStock: true
   },
   {
+    _id: "prod_7",
     name: "New York Chunky Choc-Walnut Cookies",
     category: "Cookies",
     price: 3.75,
@@ -125,7 +135,8 @@ const seedProducts = [
     inStock: true
   },
   {
-    name: "Parisian Parisian Macaron Gift Box (6 pcs)",
+    _id: "prod_8",
+    name: "Parisian Macaron Gift Box (6 pcs)",
     category: "Cookies",
     price: 14.00,
     originalPrice: 16.50,
@@ -142,11 +153,12 @@ const seedProducts = [
     inStock: true
   },
   {
+    _id: "prod_9",
     name: "Wild Mushroom & Truffle Savory Tart",
     category: "Savory",
     price: 9.50,
     originalPrice: 11.00,
-    description: "Shortcrust pastry shell loaded with sautéed cremini & shiitake mushrooms, thyme, and black truffle infused béchamel.",
+    description: "Shortcrust pastry shell loaded with sautéed cremini & shiitake mushrooms, thyme, and black truffle béchamel.",
     image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80",
     dietary: "Regular",
     isEggless: false,
@@ -159,6 +171,7 @@ const seedProducts = [
     inStock: true
   },
   {
+    _id: "prod_10",
     name: "San Sebastian Basque Burnt Cheesecake",
     category: "Cakes",
     price: 27.00,
@@ -176,6 +189,7 @@ const seedProducts = [
     inStock: true
   },
   {
+    _id: "prod_11",
     name: "Spinach, Ricotta & Feta Danish",
     category: "Savory",
     price: 6.00,
@@ -193,6 +207,7 @@ const seedProducts = [
     inStock: true
   },
   {
+    _id: "prod_12",
     name: "Classic French Baguette",
     category: "Breads",
     price: 3.50,
@@ -211,25 +226,46 @@ const seedProducts = [
   }
 ];
 
-const seedReviews = [
+export const initialReviews = [
   {
+    _id: "rev_1",
     name: "Sophia Martinez",
     rating: 5,
     comment: "The Sourdough Boule is hands down the best in the city. The crust has an amazing crunch and stays fresh for days!",
     date: "2026-10-18"
   },
   {
+    _id: "rev_2",
     name: "Rahul Sharma",
     rating: 5,
     comment: "Ordered the Belgian Truffle Cake for my sister's birthday. It was eggless, rich, and not overly sweet. Everyone loved it!",
     date: "2026-10-21"
   },
   {
+    _id: "rev_3",
     name: "Emily Chen",
-    rating: 4.8,
+    rating: 5,
     comment: "Their morning butter croissants remind me so much of Paris bakeries. Crisp, buttery, and melts in your mouth.",
     date: "2026-10-22"
   }
 ];
 
-module.exports = { seedProducts, seedReviews };
+export const initialOrders = [
+  {
+    _id: "ord_1",
+    orderId: "GCB-849201",
+    customerName: "Aarav Patel",
+    customerPhone: "+91 98765 43210",
+    customerEmail: "aarav@example.com",
+    deliveryAddress: { street: "42 Baker Street, Indiranagar", city: "Bengaluru", postalCode: "560038" },
+    items: [
+      { name: "Artisan Belgian Truffle Cake", price: 28.50, quantity: 1 },
+      { name: "Classic Sourdough Boule", price: 7.50, quantity: 2 }
+    ],
+    totalAmount: 43.50,
+    paymentMethod: "COD",
+    status: "Baking",
+    estimatedDelivery: "35 - 50 mins",
+    createdAt: new Date(Date.now() - 35 * 60 * 1000).toISOString()
+  }
+];

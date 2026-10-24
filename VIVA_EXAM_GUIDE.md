@@ -1,320 +1,282 @@
 # 🎓 Web Technology Coursework: Viva Voce & Project Defense Guide
-## Project: Golden Crust Artisan Bakery & Café (Full MERN Stack)
+## Project: Golden Crust Artisan Bakery & Café (Frontend Web Application)
 
 > **Important Note for the Student:**
-> Read this guide carefully before your presentation. During your project viva, professors typically test whether you understand the code you wrote, why you chose specific libraries, and how data moves across the MERN stack. Every section below is written to give you clear, confident answers.
+> Keep this cheatsheet handy before your evaluation! Professors in Web Technology evaluate your understanding of front-end fundamentals: HTML5 semantics, modern CSS3 layouts, JavaScript ES6+ array manipulation, React Hooks, component communication, and browser LocalStorage. Every question below is accompanied by a clear, direct answer you can speak aloud in your viva.
 
 ---
 
 ## 📑 Table of Contents
-1. [Project Overview & Key Statistics](#1-project-overview--key-statistics)
-2. [High-Level MERN Architecture & Request Life Cycle](#2-high-level-mern-architecture--request-life-cycle)
-3. [Frontend Codebase Breakdown (React + Vite)](#3-frontend-codebase-breakdown-react--vite)
-4. [React Hooks Used & Why](#4-react-hooks-used--why)
-5. [Core JavaScript ES6+ Methods Used](#5-core-javascript-es6-methods-used)
-6. [Backend Codebase Breakdown (Node.js + Express)](#6-backend-codebase-breakdown-nodejs--express)
-7. [Database Schema & Mongoose Operations](#7-database-schema--mongoose-operations)
-8. [Authentication, Security & JWT Flow](#8-authentication-security--jwt-flow)
-9. [25 Most Common Viva Questions & Model Answers](#9-25-most-common-viva-questions--model-answers)
-10. [How to Run the Project (Step-by-Step)](#10-how-to-run-the-project-step-by-step)
+1. [Project Overview & Architectural Decisions](#1-project-overview--architectural-decisions)
+2. [Component Hierarchy & Structure](#2-component-hierarchy--structure)
+3. [React Hooks Used & Concrete Code Examples](#3-react-hooks-used--concrete-code-examples)
+4. [JavaScript ES6+ Methods Used in Code](#4-javascript-es6-methods-used-in-code)
+5. [CSS3 Styling & Responsive Design Architecture](#5-css3-styling--responsive-design-architecture)
+6. [Data Persistence: The LocalStorage Strategy](#6-data-persistence-the-localstorage-strategy)
+7. [25 Most Common Web Technology Viva Questions & Answers](#7-25-most-common-web-technology-viva-questions--answers)
+8. [Quick Oral Defense Pitch (What to Say When Starting)](#8-quick-oral-defense-pitch-what-to-say-when-starting)
 
 ---
 
-## 1. Project Overview & Key Statistics
+## 1. Project Overview & Architectural Decisions
 
 - **Project Title:** Golden Crust Artisan Bakery Web Application
-- **Technology Stack:**
-  - **M** - MongoDB / Mongoose (NoSQL database for products, users, orders, reviews)
-  - **E** - Express.js (REST API framework on Node.js)
-  - **R** - React.js with Vite (Single Page Application UI)
-  - **N** - Node.js (JavaScript server runtime environment)
-- **Key Modules Implemented:**
-  1. **Artisan Catalog:** Category filtering (*Cakes, Breads, Pastries, Cookies, Savory*), live text search, dietary filters (*Eggless, Vegan, Gluten-Free*), and sorting (*Price, Rating*).
-  2. **Product Quick-View:** Modal showing nutritional info, allergen disclosures, and key ingredients.
-  3. **Interactive Custom Cake Builder:** 4-step cake designer (flavor, weight, tiers, eggless, piped message, date) with live price estimation and quote submission.
-  4. **Shopping Cart & Checkout:** Slide-over cart drawer, quantity increments/decrements, promo discount coupons (`SWEET10`, `FIRST5`), free shipping threshold, and checkout receipt generation.
-  5. **Customer Reviews Module:** 5-star interactive rating and review submission.
-  6. **Bakery Operations Portal (Staff/Admin):** Kitchen order tracking with live status toggles (*Pending ➔ Baking ➔ Out for Delivery ➔ Delivered*), and product catalog publishing.
-  7. **User Authentication:** Registration and login with `bcryptjs` password hashing and `jsonwebtoken` (JWT).
+- **Core Technologies:** HTML5, CSS3 (Vanilla CSS), JavaScript (ES6+), React 18, Vite.
+- **Why Pure Frontend Architecture?**
+  - Demonstrates mastery of core client-side web technologies: semantic HTML5, custom CSS design systems (CSS variables, Flexbox, Grid), component reusability, unidirectional data flow, and browser-native persistence via `LocalStorage`.
+  - Zero external database or backend dependencies ensures 100% reliability during college lab presentations without connection dropouts or server setup delays.
 
 ---
 
-## 2. High-Level MERN Architecture & Request Life Cycle
+## 2. Component Hierarchy & Structure
 
+```text
+src/
+├── main.jsx                     <-- Mounts React root into index.html
+├── App.jsx                      <-- Top-level coordinator with AuthProvider & CartProvider
+│
+├── context/
+│   ├── CartContext.jsx          <-- Global cart state, item counters, coupons & localStorage
+│   └── AuthContext.jsx          <-- User login, registration state & localStorage
+│
+├── data/
+│   └── bakeryData.js            <-- Structured catalog items, initial reviews & kitchen orders
+│
+├── components/
+│   ├── Navbar.jsx               <-- Sticky header with brand logo, links, staff toggle & cart badge
+│   ├── Hero.jsx                 <-- Artisan banner, freshness status & primary CTAs
+│   ├── MenuCatalog.jsx          <-- Filterable grid, live search, diet tags, price sorting
+│   ├── ProductModal.jsx         <-- Quick-view popup with nutrition, calories & allergens
+│   ├── CustomCakeBuilder.jsx    <-- 4-step cake designer with dynamic real-time price estimation
+│   ├── CartDrawer.jsx           <-- Slide-over drawer with qty buttons (+/-) & coupon validation
+│   ├── CheckoutModal.jsx        <-- Address form, payment options & order receipt generator
+│   ├── CustomerReviews.jsx      <-- Community feedback list & interactive 5-star review form
+│   ├── AdminDashboard.jsx       <-- Staff portal: live kitchen order statuses & new item creation
+│   ├── AuthModal.jsx            <-- User login/registration modal with 1-click demo buttons
+│   └── Footer.jsx               <-- Bakery operating hours, location, and student credit
+│
+└── index.css                    <-- Handcrafted master design system with CSS custom properties
 ```
-[ User Browser / React UI (Port 5173) ]
-             │
-             │ HTTP Request (fetch / REST API)
-             ▼
-[ Express.js Server (Port 5000) ]
-      ├── cors() & express.json() Middleware
-      ├── Route Matchers (/api/products, /api/orders, /api/auth, /api/reviews)
-      ├── authMiddleware.js (JWT validation)
-      └── Controllers (Business logic & calculations)
-             │
-             │ Mongoose Driver ODM
-             ▼
-[ MongoDB Database (Port 27017 / Atlas Cloud) ]
-  (Collections: products, orders, users, reviews)
-```
-
-### The 7-Step Request/Response Cycle (Explain this to the teacher!):
-1. **Trigger:** The customer clicks "Add to Cart" or "Place Order" in React.
-2. **Client Dispatch:** React calls `fetch('/api/orders', { method: 'POST', body: ... })`.
-3. **CORS & JSON Parsing:** Express middleware parses the incoming JSON request body and validates that the origin is allowed.
-4. **Routing:** The request hits `server.js` ➔ forwards to `orderRoutes.js` ➔ calls `orderController.js -> createOrder()`.
-5. **Business Logic & Validation:** The controller verifies cart items, calculates subtotal, checks discount coupons, and prepares the order document.
-6. **Database Persistence:** Mongoose executes `Order.create(orderPayload)` to save the document into MongoDB.
-7. **Client State Update:** Express responds with `res.status(201).json({ success: true, data: newOrder })`. React receives the JSON, updates state, clears the cart, and renders the confirmation receipt modal!
 
 ---
 
-## 3. Frontend Codebase Breakdown (React + Vite)
-
-### File Structure:
-- `frontend/src/index.css`: Handcrafted Vanilla CSS design system (warm sourdough ivory `#fffdf9`, dark cocoa `#3e2723`, golden honey amber `#854d0e`). Uses CSS custom properties (`:root`), flexbox, CSS grid, and responsive media queries.
-- `frontend/src/context/CartContext.jsx`: Global state container for shopping cart items, persistence via `localStorage`, quantity controls, and coupon math.
-- `frontend/src/context/AuthContext.jsx`: Manages logged-in user session, JWT token in `localStorage`, login, registration, and logout.
-- `frontend/src/components/Navbar.jsx`: Header with brand logo, section anchors, staff portal toggle, user sign-in, and cart item counter badge.
-- `frontend/src/components/Hero.jsx`: Artisanal banner with live oven batch indicators, primary call-to-actions, and bakery quality badges.
-- `frontend/src/components/MenuCatalog.jsx`: Filterable product grid with category pills, live keyword search, dietary dropdown, and price sorting.
-- `frontend/src/components/ProductModal.jsx`: Quick-view popup displaying ingredients, calories, allergens, and quantity selection.
-- `frontend/src/components/CustomCakeBuilder.jsx`: Step-by-step interactive bespoke cake customizer with live price formula and booking quote generator.
-- `frontend/src/components/CartDrawer.jsx`: Slide-out panel for modifying cart items, applying coupon codes, and bill breakdown.
-- `frontend/src/components/CheckoutModal.jsx`: Delivery address collection, payment method selector (COD/UPI/Card), order submission, and receipt view.
-- `frontend/src/components/CustomerReviews.jsx`: Community testimonials and interactive review submission with 5-star picker.
-- `frontend/src/components/AdminDashboard.jsx`: Staff operations dashboard with operational metrics, live kitchen order status updates, and catalog publishing form.
-- `frontend/src/components/AuthModal.jsx`: Login/register popup with 1-click demo account filler buttons for quick viva testing.
-- `frontend/src/App.jsx`: Top-level component wrapping `AuthProvider` and `CartProvider` and coordinating page layout.
-
----
-
-## 4. React Hooks Used & Why
-
-During viva, teachers almost **always** ask about React hooks:
+## 3. React Hooks Used & Concrete Code Examples
 
 ### 1. `useState`
-- **What it is:** React's built-in hook to declare state variables that trigger UI re-renders when updated.
-- **Where we used it:**
-  - `const [cart, setCart] = useState(...)` in `CartContext.jsx` to store basket items.
-  - `const [selectedCategory, setSelectedCategory] = useState('All')` in `MenuCatalog.jsx` for category filtering.
-  - `const [flavor, setFlavor] = useState('Belgian Dark Truffle')` in `CustomCakeBuilder.jsx` for live customization.
+- **What it is:** React's fundamental hook for storing local component state that triggers a re-render when modified.
+- **Examples in our project:**
+  - `const [selectedCategory, setSelectedCategory] = useState('All');` (tracks active category filter).
+  - `const [searchTerm, setSearchTerm] = useState('');` (tracks search bar query).
+  - `const [flavor, setFlavor] = useState('Belgian Dark Truffle');` (tracks custom cake selection).
 
 ### 2. `useEffect`
-- **What it is:** Executes side effects after components render (such as fetching data from APIs, subscribing to events, or saving to localStorage).
-- **Where we used it:**
-  - `useEffect(() => { fetchCatalog(); }, [])` in `MenuCatalog.jsx`: Runs once on component mount to load products from `/api/products`.
-  - `useEffect(() => { localStorage.setItem('golden_crust_cart', JSON.stringify(cart)); }, [cart])` in `CartContext.jsx`: Automatically synchronizes cart items to the browser's localStorage whenever `cart` changes.
+- **What it is:** Executes side-effects after rendering, such as synchronizing state with the browser's `LocalStorage`.
+- **Examples in our project:**
+  - In `CartContext.jsx`:
+    ```jsx
+    useEffect(() => {
+      localStorage.setItem('golden_crust_cart', JSON.stringify(cart));
+    }, [cart]);
+    ```
+    *Explanation for teacher:* Whenever the `cart` state array changes, this effect automatically serializes it to JSON and saves it in `localStorage` so items survive page refreshes.
 
 ### 3. `useContext`
-- **What it is:** Consumes state from a React Context without passing props down through multiple layers of components (prevents "prop drilling").
-- **Where we used it:**
-  - `useCart()` custom hook allows any component (`Navbar`, `MenuCatalog`, `ProductModal`, `CartDrawer`) to directly access cart items and call `addToCart()`.
-  - `useAuth()` custom hook allows checking `isAuthenticated` and accessing user data anywhere.
+- **What it is:** Subscribes a component to global context data without having to pass props down through multiple intermediary components (avoids "prop drilling").
+- **Examples in our project:**
+  - `const { cart, addToCart, totalItems } = useCart();`
+  - Used in `Navbar.jsx` (for the badge counter), `MenuCatalog.jsx` (for adding products), and `CartDrawer.jsx` (for modifying quantities).
 
 ### 4. `useMemo`
-- **What it is:** Memoizes computed values so heavy calculations are not repeated on every render unless their dependencies change.
-- **Where we used it:**
-  - In `MenuCatalog.jsx` to filter and sort the products list only when `products`, `selectedCategory`, `selectedDiet`, `searchTerm`, or `sortBy` change.
+- **What it is:** Caches the result of an expensive calculation between renders, re-running only when specific dependencies change.
+- **Example in our project:**
+  - In `MenuCatalog.jsx`:
+    ```jsx
+    const filteredProducts = useMemo(() => {
+      return products
+        .filter(item => /* category, diet, and search checks */)
+        .sort((a, b) => /* price or rating sort */);
+    }, [products, selectedCategory, selectedDiet, searchTerm, sortBy]);
+    ```
+    *Explanation for teacher:* This prevents re-filtering and re-sorting our catalog on every render unless the filter criteria or products actually change.
 
 ---
 
-## 5. Core JavaScript ES6+ Methods Used
+## 4. JavaScript ES6+ Methods Used in Code
 
-Teachers love asking: *"Which JavaScript array methods did you use and why?"*
+Teachers always ask: *"Which JavaScript methods did you use and why?"*
 
-1. **`.map()`**:
-   - Used to render dynamic lists of JSX elements.
-   - Example: `{filteredProducts.map(product => <div key={product._id}>...</div>)}`
-2. **`.filter()`**:
-   - Used to filter arrays by condition without modifying the original array.
-   - Example: Filtering products by category: `products.filter(item => item.category === selectedCategory)`
-   - Example: Removing an item from cart: `cart.filter(item => item.product._id !== productId)`
-3. **`.reduce()`**:
-   - Used to calculate a single cumulative aggregate value from an array of objects.
-   - Example (Cart items total): `cart.reduce((sum, item) => sum + item.quantity, 0)`
-   - Example (Cart subtotal): `cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)`
+1. **`.map()`:**
+   - Transforms each element in an array into a new value or React JSX element.
+   - Example: `{filteredProducts.map(product => <ProductCard key={product._id} product={product} />)}`
+2. **`.filter()`:**
+   - Returns a new array containing only elements that pass a test condition.
+   - Example: `cart.filter(item => item.product._id !== productId)` (removes an item).
+   - Example: Filtering by search term: `item.name.toLowerCase().includes(searchTerm.toLowerCase())`.
+3. **`.reduce()`:**
+   - Aggregates an array into a single cumulative output value.
+   - Example (Total cart items): `cart.reduce((sum, item) => sum + item.quantity, 0)`
+   - Example (Cart subtotal): `cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)`
    - Example (Admin revenue): `orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0)`
-4. **`.find()` / `.findIndex()`**:
-   - Returns the first element or index that matches a test function.
-   - Example: Checking if a product is already in the cart before deciding to increment its quantity or add a new entry.
-5. **Spread Operator (`...`)**:
-   - Creates shallow copies of arrays and objects immutably.
-   - Example: `[...prevCart, { product, quantity }]`
-6. **Destructuring**:
-   - Unpacking properties from objects: `const { customerName, items, paymentMethod } = req.body;`
-7. **`async / await` and Promises**:
-   - Simplifies asynchronous code for HTTP network calls with `fetch` and database queries with Mongoose.
+4. **`.find()` / `.findIndex()`:**
+   - Locates the first matching element or index in an array.
+   - Example: Checking if a product is already in the cart before deciding whether to increment quantity or add a new entry.
+5. **Spread Operator (`...`):**
+   - Copies arrays or objects immutably.
+   - Example: `[newOrder, ...savedOrders]` (prepends a newly placed order).
+6. **Destructuring:**
+   - Cleanly unpacks object properties: `const { name, price, description } = product;`
 
 ---
 
-## 6. Backend Codebase Breakdown (Node.js + Express)
+## 5. CSS3 Styling & Responsive Design Architecture
 
-### File Structure:
-- `backend/server.js`: Main Express entry point. Loads `.env`, connects to DB, configures middleware (`cors`, `express.json`), mounts routes, and starts HTTP server on port 5000.
-- `backend/config/db.js`: Mongoose connection handler. If connected, automatically seeds 12 bakery products and reviews if collections are empty. Features non-blocking fallback handling.
-- `backend/config/fallbackStore.js`: Built-in in-memory bakery data store that guarantees the application works smoothly even if MongoDB service is stopped on a lab computer.
-- `backend/models/`:
-  - `Product.js`: Schema for bakery items (name, price, category, dietary, ingredients, allergens, rating, calories).
-  - `Order.js`: Schema for customer orders (orderId, customer details, delivery address, items array, subtotal, discount, delivery fee, status).
-  - `User.js`: Schema for users with bcrypt password hashing pre-save hook and `comparePassword` method.
-  - `Review.js`: Schema for customer feedback and ratings.
-- `backend/controllers/`:
-  - `productController.js`: CRUD logic, keyword search with `$regex`, category/dietary filtering, and sorting.
-  - `orderController.js`: Order bill calculation, coupon verification, order placement, and kitchen status updates.
-  - `authController.js`: User registration, password verification with bcrypt, and JWT token signing.
-  - `reviewController.js`: Customer reviews and bespoke cake inquiry quote calculations.
-- `backend/routes/`:
-  - `productRoutes.js`: Maps `GET /api/products`, `POST /api/products`, `GET /api/products/:id`, `DELETE /api/products/:id`.
-  - `orderRoutes.js`: Maps `GET /api/orders`, `POST /api/orders`, `GET /api/orders/:id`, `PATCH /api/orders/:id/status`.
-  - `authRoutes.js`: Maps `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/profile`.
-  - `reviewRoutes.js`: Maps `GET /api/reviews`, `POST /api/reviews`, `POST /api/reviews/custom-cake`.
-- `backend/middleware/`:
-  - `authMiddleware.js`: Verifies `Bearer <JWT_TOKEN>` in Authorization header.
-  - `errorHandler.js`: Intercepts 404 Not Found and internal server errors, formatting them as clean JSON.
+### Why Vanilla CSS over Tailwind or Bootstrap?
+In a Web Technology academic course, teachers want to verify that the student understands foundational CSS rules rather than using utility-class frameworks. Our stylesheet (`src/index.css`) features:
+
+1. **CSS Custom Properties (Variables in `:root`):**
+   ```css
+   :root {
+     --color-primary: #854d0e;       /* Golden honey amber */
+     --color-secondary: #3e2723;     /* Dark cocoa espresso */
+     --color-bg-main: #fffdf9;       /* Sourdough ivory cream */
+     --font-serif: 'Playfair Display', Georgia, serif;
+     --font-sans: 'Plus Jakarta Sans', sans-serif;
+     --shadow-hover: 0 18px 36px rgba(133, 77, 14, 0.16);
+   }
+   ```
+   *Advantage:* Changes to the color palette or fonts can be applied globally in one place.
+
+2. **CSS Grid:**
+   - Used for the product catalog layout:
+     ```css
+     .products-grid {
+       display: grid;
+       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+       gap: 2rem;
+     }
+     ```
+   - Automatically adapts column count based on available screen width without requiring complex media queries.
+
+3. **Flexbox:**
+   - Used for navigation bars, card footers, button groupings, and quantity adjusters (`display: flex; align-items: center; justify-content: space-between;`).
+
+4. **Media Queries:**
+   - Responsive breakpoints at `max-width: 992px` (tablets) and `max-width: 768px` (mobile devices) to adjust hero typography and collapse desktop layouts.
 
 ---
 
-## 7. Database Schema & Mongoose Operations
+## 6. Data Persistence: The LocalStorage Strategy
 
-### Question: *"Explain your Mongoose Schema and Models."*
+### Question: *"What happens if I refresh the page? Does my cart or placed order disappear?"*
 **Answer:**
-A Mongoose **Schema** defines the structure, data types, and validation rules of documents inside a MongoDB collection. A Mongoose **Model** is a compiled wrapper on top of the Schema that provides methods to create, query, update, and delete database records.
-
-### Key Mongoose Methods Used:
-1. `Product.find(query)`: Queries documents matching search criteria.
-2. `Product.findById(id)`: Fetches a single document by its unique MongoDB `_id`.
-3. `Product.create(data)`: Validates and inserts a new document.
-4. `Product.findByIdAndDelete(id)`: Removes a product from the database.
-5. `Order.findByIdAndUpdate(id, { status }, { new: true })`: Updates kitchen status and returns the modified document.
-6. `User.findOne({ email })`: Checks if an account already exists during registration or login.
-7. `userSchema.pre('save', async function(next) { ... })`: Mongoose lifecycle hook that automatically encrypts passwords using bcrypt before saving.
+No! All application data persists using the browser's native **`window.localStorage` API**:
+1. **Shopping Cart:** Stored under key `'golden_crust_cart'`. Initialized with `JSON.parse(localStorage.getItem('golden_crust_cart')) || []`.
+2. **Customer Orders:** Stored under `'golden_crust_orders'`. When checkout completes, the order is appended to this storage and appears immediately on the Staff Portal.
+3. **Customer Reviews:** Stored under `'golden_crust_reviews'`. Newly submitted reviews are stored and reloaded on page load.
+4. **User Session:** Stored under `'golden_crust_user'`. Remembers whether the user is logged in as a Customer or Admin.
 
 ---
 
-## 8. Authentication, Security & JWT Flow
+## 7. 25 Most Common Web Technology Viva Questions & Answers
 
-### Question: *"How does authentication work in your application?"*
-**Answer:**
-1. **Password Hashing:** We never store plain text passwords. When a user registers, Mongoose's `pre('save')` hook generates a cryptographic salt (`bcrypt.genSalt(10)`) and hashes the password (`bcrypt.hash()`).
-2. **Token Generation:** When logging in, `bcrypt.compare()` compares the plain password candidate with the stored hash. If valid, the server signs a **JSON Web Token (JWT)** using `jwt.sign({ id, email, role }, process.env.JWT_SECRET, { expiresIn: '7d' })`.
-3. **Client Storage:** The frontend receives the JWT and stores it in `localStorage`.
-4. **Protected Requests:** When accessing protected routes, the frontend sends the token in the HTTP Authorization header: `Authorization: Bearer <TOKEN>`.
-5. **Middleware Verification:** `authMiddleware.js` intercepts the request, calls `jwt.verify(token, JWT_SECRET)`, extracts the user ID, and attaches the user object to `req.user`.
+### Q1: What is the Virtual DOM in React and how does it work?
+**Ans:** The Virtual DOM is a lightweight in-memory representation of the real DOM tree. When a component's state changes, React updates the Virtual DOM, compares it with the previous snapshot using a "diffing" algorithm, and updates only the specific changed nodes in the real browser DOM. This avoids slow full-page DOM repaints.
 
----
-
-## 9. 25 Most Common Viva Questions & Model Answers
-
-### Q1: What does MERN stand for?
-**Ans:** MongoDB (database), Express.js (backend web framework), React.js (frontend user interface library), and Node.js (JavaScript runtime environment).
-
-### Q2: What is CORS and why is it needed?
-**Ans:** CORS stands for Cross-Origin Resource Sharing. Browsers enforce a security mechanism called Same-Origin Policy that prevents a web page on one domain/port (e.g., React on `http://localhost:5173`) from making AJAX requests to a different domain/port (e.g., Express on `http://localhost:5000`). We used the `cors` package in Express to explicitly allow cross-origin requests.
-
-### Q3: What is the difference between State and Props in React?
-**Ans:** 
-- **Props (Properties):** Read-only data passed from a parent component down to a child component (unidirectional data flow).
-- **State:** Mutable data managed internally within a component that can change over time based on user interactions, triggering a re-render.
-
-### Q4: Why did you use React Context instead of Redux?
-**Ans:** React Context is built natively into React and provides lightweight global state management for the shopping cart and user authentication without the heavy boilerplate and bundle size of Redux, making it clean, efficient, and maintainable.
-
-### Q5: What is the purpose of `express.json()` middleware?
-**Ans:** By default, Node.js receives HTTP request bodies as raw binary data streams. `express.json()` parses incoming HTTP requests with JSON payloads and converts them into JavaScript objects accessible via `req.body`.
-
-### Q6: What is the difference between SQL and NoSQL (MongoDB)?
-**Ans:** SQL databases (like MySQL/PostgreSQL) are relational, table-based, and require strict predefined schemas with joins. MongoDB is a NoSQL, document-oriented database that stores records as flexible BSON/JSON-like documents, which maps naturally to JavaScript objects in a MERN stack.
-
-### Q7: Why do you store JWT in `localStorage`?
-**Ans:** Storing the JWT token in `localStorage` allows the user session to persist across page refreshes and browser tab closures, ensuring the customer stays logged in without needing to re-enter credentials.
-
-### Q8: What does the HTTP Status Code 200, 201, 400, 401, 404, and 500 mean?
+### Q2: What is the difference between State and Props?
 **Ans:**
-- **200 OK:** Request succeeded (e.g., fetched catalog).
-- **201 Created:** New resource successfully created (e.g., new order placed, user registered).
-- **400 Bad Request:** Missing or invalid request data sent by the client.
-- **401 Unauthorized:** Missing or invalid authentication token.
-- **404 Not Found:** Requested route or database item does not exist.
-- **500 Internal Server Error:** Unexpected failure or unhandled exception on the server.
+- **Props (Properties):** Immutable, read-only data passed from a parent component down to a child component (unidirectional data flow).
+- **State:** Mutable data managed internally within a component that can change over time based on user interactions, triggering a UI re-render.
 
-### Q9: How does the Shopping Cart persist when I refresh the page?
-**Ans:** In `CartContext.jsx`, we initialize the cart state by reading from `localStorage.getItem('golden_crust_cart')` using `JSON.parse()`. A `useEffect` hook with `[cart]` as a dependency listens for any cart changes and writes the serialized cart back into `localStorage.setItem()`.
+### Q3: Why did you use React Context instead of Prop Drilling?
+**Ans:** Prop drilling requires passing props through multiple intermediate components that don't need the data themselves. React Context provides a centralized state provider (`CartProvider`) so any component (`Navbar`, `ProductCard`, `CartDrawer`) can access `cart` directly via `useCart()`.
 
-### Q10: What is the difference between `PUT` and `PATCH` HTTP methods?
-**Ans:** `PUT` replaces the entire target resource with the new payload. `PATCH` applies partial modifications to a resource. In our project, we used `PATCH /api/orders/:id/status` because we only modify the `status` field of the order document.
+### Q4: What is the difference between `localStorage`, `sessionStorage`, and `cookies`?
+**Ans:**
+- **`localStorage`:** Persists data with no expiration time; remains stored even when the browser is closed and reopened. (Capacity ~5MB).
+- **`sessionStorage`:** Persists data only for the duration of the page session (cleared when the tab or window is closed).
+- **`cookies`:** Small pieces of data (~4KB) with explicit expiration dates, automatically sent to the server with every HTTP request.
 
-### Q11: What is a Mongoose Virtual or Pre-hook?
-**Ans:** A Mongoose pre-hook (`pre('save')`) is middleware that executes before an operation is committed to the database. We used `userSchema.pre('save')` to hash passwords with `bcryptjs` before writing them to disk.
+### Q5: What are Controlled Components in React?
+**Ans:** Controlled components are input form elements whose values are controlled by React state (e.g., `<input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />`). React acts as the "single source of truth".
 
-### Q12: How does keyword search work on the menu?
-**Ans:** The search query filters both product names and descriptions. In the frontend, it uses `.includes(searchTerm.toLowerCase())`. In MongoDB, it uses regular expressions: `{ name: { $regex: search, $options: 'i' } }` where `'i'` signifies case-insensitivity.
+### Q6: What is a Single Page Application (SPA)?
+**Ans:** An SPA is a web application that loads a single HTML document (`index.html`) and dynamically updates the interface via JavaScript as the user interacts, providing a fast, seamless app-like experience without full-page browser reloads.
 
-### Q13: What is the difference between synchronous and asynchronous code?
-**Ans:** Synchronous code executes sequentially line-by-line, blocking subsequent instructions until the current one finishes. Asynchronous code allows time-consuming operations (like database queries or network requests) to run in the background, executing a callback or resolving a Promise (`async/await`) when finished without freezing the thread.
+### Q7: What is the difference between CSS Flexbox and CSS Grid?
+**Ans:**
+- **Flexbox:** One-dimensional layout model designed for distributing space along either a row OR a column (ideal for navbars, buttons, lists).
+- **CSS Grid:** Two-dimensional layout model designed for handling both rows AND columns simultaneously (ideal for product cards grid and page layouts).
 
-### Q14: What is the purpose of the `.env` file?
-**Ans:** The `.env` file stores environment variables such as `PORT`, `MONGO_URI`, and `JWT_SECRET`. This keeps sensitive secrets out of source code repositories and allows different configurations across development, testing, and production.
+### Q8: What are CSS Custom Properties (Variables)?
+**Ans:** CSS variables (e.g., `--color-primary: #854d0e;`) declared inside `:root` allow values to be defined once and reused throughout the stylesheet, ensuring design consistency and easy theme updates.
 
-### Q15: How does the Custom Cake Builder calculate live prices?
-**Ans:** It uses a dynamic calculation function in `CustomCakeBuilder.jsx`:
-`price = (basePrice * weightFactor) * tierMultiplier + egglessCharge`. As the user changes dropdown selections, React's `useState` triggers an instant recalculation and UI update.
+### Q9: Why is the `key` prop required when rendering lists with `.map()` in React?
+**Ans:** The `key` prop provides a unique identifier for each element in a list. It helps React's reconciliation diffing algorithm identify which items were changed, added, or removed, avoiding unnecessary re-renders of the entire list.
 
-### Q16: How do you handle errors centrally in Express?
-**Ans:** We created `errorHandler.js` middleware with four arguments `(err, req, res, next)`. When any controller encounters an error, it passes it to `next(error)`. Express routes the exception to our centralized error handler, which sends a structured JSON response `{ success: false, message: err.message }`.
+### Q10: How does keyword search work on your menu?
+**Ans:** In `MenuCatalog.jsx`, as the user types, the `searchTerm` state updates on every keystroke (`onChange`). The `.filter()` method performs a case-insensitive check: `item.name.toLowerCase().includes(searchTerm.toLowerCase())`, instantly narrowing down matching products.
 
-### Q17: What is the purpose of `package.json`?
-**Ans:** It is the project manifest file in Node.js. It records project metadata, scripts (`start`, `dev`, `build`), and explicit dependency packages and version ranges.
+### Q11: How does the Custom Cake Builder calculate live prices?
+**Ans:** It uses a dynamic price calculation function in `CustomCakeBuilder.jsx`:
+$$\text{Price} = (\text{BaseRate} \times \text{WeightMultiplier} \times \text{TierMultiplier}) + \text{EgglessCharge}$$
+Whenever the user changes dropdown selections, React re-renders the component and calculates the new estimate in real time.
 
-### Q18: What is Vite and why did you choose it over Create React App (CRA)?
-**Ans:** Vite is a modern frontend build tool that leverages native ES modules in the browser. It provides near-instant server starts, lightning-fast Hot Module Replacement (HMR), and optimized production builds with Rollup, unlike Create React App which is deprecated and significantly slower.
+### Q12: What is Event Bubbling in JavaScript?
+**Ans:** Event bubbling is the process where an event triggered on a nested child element propagates upwards through its parent elements in the DOM tree. In our modal windows, we use `e.stopPropagation()` on the modal content to prevent clicking inside the modal from bubbling to the background overlay and accidentally closing it.
 
-### Q19: What is `npm`?
-**Ans:** Node Package Manager (NPM) is the default package manager and registry for Node.js, used to install, update, and manage third-party open-source libraries.
+### Q13: What is the difference between `==` and `===` in JavaScript?
+**Ans:** `==` (abstract equality) performs type coercion before comparing values (e.g., `'5' == 5` is `true`). `===` (strict equality) checks both value and data type without coercion (e.g., `'5' === 5` is `false`). We always use `===` for safety.
 
-### Q20: How does the Admin Portal work?
-**Ans:** The Admin Portal is an operational dashboard toggled via the "Staff Portal" button in the navbar. It fetches orders from `/api/orders`, renders them in an administrative table, and allows kitchen staff to update orders from `Pending` to `Baking`, `Out for Delivery`, or `Delivered`. It also contains a form to publish new bakery items directly into the MongoDB catalog.
+### Q14: What is Vite and why did you use it over Create React App (CRA)?
+**Ans:** Vite is a next-generation frontend build tool that leverages native ES modules in modern browsers. It offers near-instant dev server startup (<500ms) and lightning-fast Hot Module Replacement (HMR), whereas Create React App is outdated and uses slower Webpack bundling.
 
-### Q21: What is a Single Page Application (SPA)?
-**Ans:** An SPA is a web application that loads a single HTML page (`index.html`) and dynamically updates the Document Object Model (DOM) as the user interacts with the app, eliminating full page reloads and providing a smoother user experience.
+### Q15: What is Semantic HTML5 and why is it important?
+**Ans:** Semantic HTML uses tags that convey the meaning and structure of content (e.g., `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>`) rather than generic `<div>` tags. It improves code readability, search engine optimization (SEO), and accessibility for screen readers.
 
-### Q22: What are CSS Custom Properties?
-**Ans:** Also known as CSS variables (e.g. `--color-primary: #854d0e;`), they allow values to be stored in one place (`:root`) and reused throughout the stylesheet, making the design system consistent and easy to maintain.
+### Q16: How does your Promo Coupon Code logic work?
+**Ans:** In `CartContext.jsx`, the `applyCoupon(code)` method checks the trimmed string: if `SWEET10`, it applies a 10% discount; if `FIRST5`, it applies a 15% discount. The subtotal, discount, and final bill update dynamically.
 
-### Q23: How do you prevent SQL injection / NoSQL injection?
-**Ans:** By using Mongoose Schemas with strict type definitions and parameter binding instead of string concatenation, Mongoose automatically sanitizes inputs and rejects malformed fields.
+### Q17: What is the purpose of the `aria-label` attribute?
+**Ans:** `aria-label` provides an accessible text description for interactive elements (such as icon-only buttons or close triggers `X`) so assistive technologies like screen readers can announce their purpose to visually impaired users.
 
-### Q24: What is the role of `server.js`?
-**Ans:** It is the entry point of the backend server. It boots the Express application, applies global middleware, connects to MongoDB, mounts route handlers, and binds the HTTP port listener.
+### Q18: What is the difference between `null` and `undefined` in JavaScript?
+**Ans:** `undefined` means a variable has been declared but has not yet been assigned a value. `null` is an explicit assignment representing the intentional absence of any object value.
 
-### Q25: What happens if MongoDB is offline on the teacher's evaluation computer?
-**Ans:** Our backend includes an integrated, zero-downtime fallback data store (`fallbackStore.js`) in `db.js`. If local MongoDB is not running, the server detects it gracefully, logs a notice, and activates the in-memory store so that catalog browsing, ordering, and admin status updates continue functioning seamlessly without crashing.
+### Q19: What are Arrow Functions in ES6?
+**Ans:** Arrow functions (`() => {}`) provide a concise syntax for writing function expressions. Unlike standard functions, they do not bind their own `this` keyword; they inherit `this` lexically from their enclosing scope.
+
+### Q20: How does the Admin / Staff Portal work without a backend?
+**Ans:** The Admin Portal is integrated into the client application. It reads orders directly from `localStorage.getItem('golden_crust_orders')`. When staff change an order's status from `Pending` to `Baking` or `Delivered`, the state updates and the modified array is saved back to `localStorage`.
+
+### Q21: What is Destructuring Assignment in ES6?
+**Ans:** Destructuring is syntax that allows unpacking properties from objects or arrays directly into distinct variables, e.g., `const { name, price } = product;` instead of `const name = product.name;`.
+
+### Q22: What is the purpose of `package.json`?
+**Ans:** It is the project manifest file. It lists project metadata, operational scripts (`dev`, `build`, `preview`), and direct library dependencies (`react`, `react-dom`, `lucide-react`).
+
+### Q23: How do you achieve mobile responsiveness in your bakery website?
+**Ans:** We use responsive CSS:
+1. Flexible percentages and viewport units.
+2. CSS Grid with `repeat(auto-fill, minmax(280px, 1fr))` for fluid product card wrapping.
+3. Media queries (`@media (max-width: 768px)`) that adjust typography sizes and stack flex columns.
+
+### Q24: What is an Asynchronous Function in JavaScript?
+**Ans:** An asynchronous function executes in the background without blocking the single-threaded JavaScript execution loop, returning a Promise that resolves when the operation completes.
+
+### Q25: Why is client-side validation important in web forms?
+**Ans:** Client-side validation (e.g., verifying phone numbers, required email fields, and password lengths in `CheckoutModal.jsx` and `AuthModal.jsx`) provides instant, user-friendly feedback before submission without unnecessary processing delays.
 
 ---
 
-## 10. How to Run the Project (Step-by-Step)
+## 8. Quick Oral Defense Pitch (What to Say When Starting)
 
-### Terminal 1: Start the Backend (Port 5000)
-```bash
-cd backend
-npm install
-npm run dev
-# or: node server.js
-```
-*Backend runs on: `http://localhost:5000`*
+When your teacher tells you to begin your project presentation, speak this verbatim:
 
-### Terminal 2: Start the Frontend (Port 5173)
-```bash
-cd frontend
-npm install
-npm run dev
-```
-*Frontend runs on: `http://localhost:5173`*
-
-### Evaluation Credentials for Quick Testing:
-- **Customer Account:** `customer@goldencrust.com` / `bakery123`
-- **Admin / Staff Account:** `admin@goldencrust.com` / `admin123`
-- **Discount Coupons:** `SWEET10` (10% off), `FIRST5` (15% off)
+> *"Good morning/afternoon, Sir/Madam. For my Web Technology project, I developed **Golden Crust**, a modern, responsive artisan bakery web application built using **React, JavaScript ES6+, and handcrafted Vanilla CSS**.*
+>
+> *I designed the project with a clean, component-based frontend architecture. The website includes an interactive **product catalog** with real-time text search and dietary filtering, an **interactive custom cake designer** that dynamically estimates prices based on weight and tiers, a **persistent shopping cart drawer** with coupon code logic, a **checkout and receipt generation modal**, a **customer review system**, and a **staff kitchen portal** to manage live order statuses.*
+>
+> *All data across the cart, orders, and reviews is managed using **React Hooks (`useState`, `useEffect`, `useContext`, `useMemo`)** and persisted seamlessly using the browser's **`LocalStorage` API**. I would be happy to demonstrate the website and walk you through any component or function in the code."*
 
 ---
 *Prepared for Web Technology Coursework Submission & Viva Voce.*

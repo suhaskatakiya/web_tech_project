@@ -1,22 +1,50 @@
 /**
  * AdminDashboard Component
  * Bakery Staff / Manager Operations Portal.
+ * 
  * Features:
- * 1. Live Orders Board with preparation status updates (Pending -> Baking -> Out for Delivery -> Delivered)
- * 2. Add New Bakery Product form (Creates new product in MongoDB)
+ * 1. Live Orders Board with kitchen status toggles (Pending -> Baking -> Out for Delivery -> Delivered)
+ * 2. Add New Bakery Product form (Persists into LocalStorage catalog)
  * 3. Inventory Management (Delete or inspect items)
  */
 
 import React, { useState, useEffect } from 'react';
-import { Package, PlusCircle, RefreshCw, CheckCircle, Clock, Trash2, ArrowUpRight } from 'lucide-react';
+import { Package, PlusCircle, RefreshCw, Trash2 } from 'lucide-react';
+import { initialOrders, initialProducts } from '../data/bakeryData';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'add-product', 'inventory'
-  const [orders, setOrders] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+
+  // Load orders and products from LocalStorage
+  const [orders, setOrders] = useState(() => {
+    try {
+      const saved = localStorage.getItem('golden_crust_orders');
+      return saved ? JSON.parse(saved) : initialOrders;
+    } catch {
+      return initialOrders;
+    }
+  });
+
+  const [products, setProducts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('golden_crust_products');
+      return saved ? JSON.parse(saved) : initialProducts;
+    } catch {
+      return initialProducts;
+    }
+  });
+
   const [msg, setMsg] = useState('');
+
+  // Synchronize orders to LocalStorage
+  useEffect(() => {
+    localStorage.setItem('golden_crust_orders', JSON.stringify(orders));
+  }, [orders]);
+
+  // Synchronize products to LocalStorage
+  useEffect(() => {
+    localStorage.setItem('golden_crust_products', JSON.stringify(products));
+  }, [products]);
 
   // Add Product Form State
   const [newName, setNewName] = useState('');
@@ -29,107 +57,67 @@ export default function AdminDashboard() {
   const [newIngredients, setNewIngredients] = useState('');
   const [newCalories, setNewCalories] = useState('280 kcal');
 
-  // Fetch orders and products
-  const fetchData = async () => {
+  // Reload data from LocalStorage
+  const handleRefresh = () => {
     try {
-      setRefreshing(true);
-      const [orderRes, prodRes] = await Promise.all([
-        fetch('/api/orders'),
-        fetch('/api/products')
-      ]);
-
-      const orderData = await orderRes.json();
-      const prodData = await prodRes.json();
-
-      if (orderData.success) setOrders(orderData.data);
-      if (prodData.success) setProducts(prodData.data);
+      const savedOrders = JSON.parse(localStorage.getItem('golden_crust_orders') || 'null') || initialOrders;
+      const savedProds = JSON.parse(localStorage.getItem('golden_crust_products') || 'null') || initialProducts;
+      setOrders(savedOrders);
+      setProducts(savedProds);
+      setMsg('⚡ Data refreshed from LocalStorage!');
+      setTimeout(() => setMsg(''), 2500);
     } catch (err) {
-      console.error('Admin fetch error:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+      console.error(err);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Update order status (Pending -> Baking -> Out for Delivery -> Delivered)
-  const handleStatusChange = async (orderId, newStatus) => {
-    try {
-      const res = await fetch(`/api/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setOrders((prev) =>
-          prev.map((o) => (o._id === orderId || o.orderId === orderId ? { ...o, status: newStatus } : o))
-        );
-        setMsg(`✅ Order ${orderId} updated to: ${newStatus}`);
-        setTimeout(() => setMsg(''), 3000);
-      }
-    } catch (err) {
-      console.error('Failed to update order status:', err);
-    }
+  // Update kitchen order status
+  const handleStatusChange = (orderId, newStatus) => {
+    setOrders((prev) =>
+      prev.map((o) => (o._id === orderId || o.orderId === orderId ? { ...o, status: newStatus } : o))
+    );
+    setMsg(`✅ Order ${orderId} updated to: ${newStatus}`);
+    setTimeout(() => setMsg(''), 3000);
   };
 
-  // Add new bakery product
-  const handleCreateProduct = async (e) => {
+  // Add new bakery product to catalog
+  const handleCreateProduct = (e) => {
     e.preventDefault();
     if (!newName || !newPrice || !newDesc) return;
 
-    try {
-      const res = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newName,
-          category: newCategory,
-          price: Number(newPrice),
-          description: newDesc,
-          image: newImage || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600',
-          dietary: newDietary,
-          isEggless: newIsEggless,
-          ingredients: newIngredients,
-          calories: newCalories
-        })
-      });
+    const newProd = {
+      _id: 'prod_' + Date.now(),
+      name: newName,
+      category: newCategory,
+      price: Number(newPrice),
+      originalPrice: Number(newPrice),
+      description: newDesc,
+      image: newImage || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600',
+      dietary: newDietary,
+      isEggless: newIsEggless,
+      ingredients: newIngredients ? newIngredients.split(',').map(s => s.trim()) : ['Flour', 'Butter', 'Sugar'],
+      calories: newCalories || '260 kcal',
+      rating: 5.0,
+      reviewsCount: 1,
+      inStock: true
+    };
 
-      const data = await res.json();
-      if (data.success) {
-        setProducts((prev) => [data.data, ...prev]);
-        setMsg('🎉 New bakery item published to live catalog!');
-        setNewName('');
-        setNewPrice('');
-        setNewDesc('');
-        setNewImage('');
-        setNewIngredients('');
-        setTimeout(() => setMsg(''), 3500);
-      }
-    } catch (err) {
-      console.error('Error adding product:', err);
-    }
+    setProducts((prev) => [newProd, ...prev]);
+    setMsg('🎉 New bakery item published to live catalog!');
+    setNewName('');
+    setNewPrice('');
+    setNewDesc('');
+    setNewImage('');
+    setNewIngredients('');
+    setTimeout(() => setMsg(''), 3500);
   };
 
-  // Delete product
-  const handleDeleteProduct = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this bakery item from catalog?')) return;
-
-    try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        setProducts((prev) => prev.filter((p) => p._id !== id));
-        setMsg('Item removed from catalog.');
-        setTimeout(() => setMsg(''), 3000);
-      }
-    } catch (err) {
-      console.error('Delete error:', err);
-    }
+  // Delete product from catalog
+  const handleDeleteProduct = (id) => {
+    if (!window.confirm('Are you sure you want to delete this bakery item from the catalog?')) return;
+    setProducts((prev) => prev.filter((p) => p._id !== id));
+    setMsg('Item removed from catalog.');
+    setTimeout(() => setMsg(''), 3000);
   };
 
   // Metrics
@@ -155,12 +143,12 @@ export default function AdminDashboard() {
           </div>
 
           <button
-            onClick={fetchData}
+            onClick={handleRefresh}
             className="btn btn-secondary btn-sm"
             style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
           >
-            <RefreshCw size={15} className={refreshing ? 'spin' : ''} />
-            <span>Refresh Data</span>
+            <RefreshCw size={15} />
+            <span>Refresh State</span>
           </button>
         </div>
 
@@ -176,7 +164,7 @@ export default function AdminDashboard() {
           <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
             <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: '600' }}>TOTAL ORDERS PLACED</span>
             <h3 style={{ fontSize: '1.8rem', color: '#0f172a', margin: '0.35rem 0' }}>{orders.length}</h3>
-            <span style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: '600' }}>Live MongoDB sync</span>
+            <span style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: '600' }}>Synced via LocalStorage</span>
           </div>
 
           <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
@@ -194,7 +182,7 @@ export default function AdminDashboard() {
           <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
             <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: '600' }}>CATALOG INVENTORY</span>
             <h3 style={{ fontSize: '1.8rem', color: '#0f172a', margin: '0.35rem 0' }}>{products.length} Items</h3>
-            <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Across 5 bakery categories</span>
+            <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Across 5 categories</span>
           </div>
         </div>
 

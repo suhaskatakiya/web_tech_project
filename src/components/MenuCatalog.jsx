@@ -2,11 +2,13 @@
  * MenuCatalog Component
  * Displays interactive bakery catalog with category filters,
  * live keyword search, dietary tags, price sorting, and quick view modal.
+ * Uses client-side state and LocalStorage for persistent data.
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Star, ShoppingBag, Eye, Check, Sparkles } from 'lucide-react';
+import { Search, Star, ShoppingBag, Eye, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { initialProducts } from '../data/bakeryData';
 import ProductModal from './ProductModal';
 
 const CATEGORIES = ['All', 'Cakes', 'Breads', 'Pastries', 'Cookies', 'Savory'];
@@ -14,11 +16,18 @@ const DIETARY_OPTIONS = ['All', 'Eggless', 'Vegan', 'Gluten-Free'];
 
 export default function MenuCatalog() {
   const { addToCart } = useCart();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  // Filter States
+  // Load products from localStorage or fallback to initialProducts
+  const [products, setProducts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('golden_crust_products');
+      return saved ? JSON.parse(saved) : initialProducts;
+    } catch {
+      return initialProducts;
+    }
+  });
+
+  // Filter & Search States
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDiet, setSelectedDiet] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,41 +37,21 @@ export default function MenuCatalog() {
   const [activeProduct, setActiveProduct] = useState(null);
   const [recentlyAddedId, setRecentlyAddedId] = useState(null);
 
-  // Fetch products from backend Express API
-  useEffect(() => {
-    const fetchCatalog = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch('/api/products');
-        const data = await res.json();
-
-        if (data.success && Array.isArray(data.data)) {
-          setProducts(data.data);
-        } else {
-          throw new Error('Could not load products');
-        }
-      } catch (err) {
-        console.error('Error fetching catalog:', err);
-        setError('Failed to fetch bakery items from server. Please make sure the backend is running.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCatalog();
-  }, []);
-
   // Filter & Sort Logic using useMemo for performance
   const filteredProducts = useMemo(() => {
     return products
       .filter((item) => {
         // Category check
-        const matchCategory = selectedCategory === 'All' || item.category.toLowerCase() === selectedCategory.toLowerCase();
+        const matchCategory =
+          selectedCategory === 'All' ||
+          item.category.toLowerCase() === selectedCategory.toLowerCase();
 
         // Dietary check
-        const matchDiet = selectedDiet === 'All' || item.dietary.toLowerCase() === selectedDiet.toLowerCase();
+        const matchDiet =
+          selectedDiet === 'All' ||
+          item.dietary.toLowerCase() === selectedDiet.toLowerCase();
 
-        // Search check
+        // Search check (case-insensitive substring match)
         const matchSearch =
           searchTerm.trim() === '' ||
           item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -74,7 +63,7 @@ export default function MenuCatalog() {
         if (sortBy === 'price-low') return a.price - b.price;
         if (sortBy === 'price-high') return b.price - a.price;
         if (sortBy === 'rating') return b.rating - a.rating;
-        return 0; // Default/Featured
+        return 0; // Default featured order
       });
   }, [products, selectedCategory, selectedDiet, searchTerm, sortBy]);
 
@@ -173,21 +162,8 @@ export default function MenuCatalog() {
           </div>
         </div>
 
-        {/* Loading and Error States */}
-        {loading && (
-          <div style={{ textAlign: 'center', padding: '4rem 0', color: '#854d0e' }}>
-            <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>🥖 Warming up the ovens & loading bakery menu...</p>
-          </div>
-        )}
-
-        {error && (
-          <div style={{ background: '#fee2e2', border: '1px solid #f87171', color: '#b91c1c', padding: '1.25rem', borderRadius: '12px', textAlign: 'center', marginBottom: '2rem' }}>
-            <p>{error}</p>
-          </div>
-        )}
-
         {/* Products Grid */}
-        {!loading && filteredProducts.length > 0 && (
+        {filteredProducts.length > 0 && (
           <div className="products-grid">
             {filteredProducts.map((product) => {
               const isAdded = recentlyAddedId === product._id;
@@ -270,7 +246,7 @@ export default function MenuCatalog() {
         )}
 
         {/* Empty Search Results State */}
-        {!loading && filteredProducts.length === 0 && (
+        {filteredProducts.length === 0 && (
           <div style={{ textAlign: 'center', padding: '4rem 1.5rem', background: '#ffffff', borderRadius: '16px', border: '1px solid #ede4d8' }}>
             <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>🥐</span>
             <h3 style={{ fontSize: '1.4rem', color: '#3e2723', marginBottom: '0.5rem' }}>No bakery treats match your criteria</h3>

@@ -1,59 +1,63 @@
 # 🥐 Golden Crust Artisan Bakery & Café
-### Full MERN Stack Web Technology Course Project
+### Web Technology Course Project — Frontend Web Application
 
-A complete, responsive, full-stack bakery web application built using **MongoDB, Express.js, React.js, and Node.js (MERN Stack)**. Designed and handcrafted with modern artisanal aesthetics, interactive cart management, custom celebration cake builder, customer reviews, and a kitchen operations staff portal.
+A modern, responsive, and handcrafted **Frontend Web Technology Project** built using **React, Vanilla CSS, JavaScript (ES6+), and Vite**. 
+
+Designed specifically to demonstrate core front-end engineering fundamentals: semantic HTML5, modern CSS3 layout techniques (CSS Grid & Flexbox), component-based UI architecture, dynamic state management with React Hooks, and client-side persistence via the browser's `LocalStorage` API.
 
 ---
 
 ## 🌟 Key Features
 
 1. **Artisanal Product Catalog (`MenuCatalog.jsx`)**
-   - Filter by categories: *Cakes, Artisan Breads, Pastries, Cookies, Savory*.
+   - Filter by categories: *All Treats, Cakes, Artisan Breads, Pastries, Cookies, Savory*.
    - Filter by dietary preferences: *🌱 100% Eggless, 🌿 Vegan, 🌾 Gluten-Free*.
-   - Live real-time search with instant feedback.
-   - Price and customer rating sorting.
-   - Quick-View modal with nutrition facts, allergens, and ingredients list.
+   - Real-time instant text search filtering by product name and ingredients.
+   - Price sorting (*Low to High, High to Low*) and rating sorting.
+   - Quick-View modal with nutritional information, calorie counts, allergens, and ingredients list.
 
 2. **Interactive Custom Cake Designer (`CustomCakeBuilder.jsx`)**
    - 4-step interactive bespoke cake customizer.
-   - Live real-time price estimation formula based on weight, tiers, flavors, and eggless preference.
-   - Personalized chocolate piped message input.
-   - Direct inquiry booking submission with unique confirmation tracking code.
+   - Live real-time price estimation formula updating dynamically as the user modifies flavor, weight, tiers, and eggless choices:
+     $$\text{Price} = (\text{BaseRate} \times \text{WeightFactor} \times \text{TierMultiplier}) + \text{EgglessCharge}$$
+   - Custom chocolate piped message input.
+   - Instant booking quote confirmation receipt with unique tracking ID.
 
 3. **Persistent Shopping Cart & Checkout (`CartDrawer.jsx`, `CheckoutModal.jsx`)**
-   - Slide-over cart drawer with quantity increments (`+`) and decrements (`-`).
-   - LocalStorage synchronization (cart remains intact even after browser refresh).
-   - Promo coupon code system (`SWEET10` for 10% off, `FIRST5` for 15% off).
-   - Dynamic free delivery calculation (free on orders over $35).
-   - Complete checkout with Cash on Delivery (COD), UPI / QR Code, or Card options.
-   - Immediate order confirmation receipt with tracking ID.
+   - Slide-over drawer with item increment (`+`) and decrement (`-`) quantity controls.
+   - **LocalStorage Persistence:** Cart items remain saved even after refreshing or closing the browser.
+   - Promo coupon code verification (`SWEET10` for 10% discount, `FIRST5` for 15% discount).
+   - Dynamic free delivery calculation (free delivery on orders over $35).
+   - Interactive checkout form with delivery address inputs and payment modes (COD, UPI / QR, Card).
+   - Instant order confirmation receipt with itemized breakdown and delivery timeline.
 
 4. **Customer Reviews & Testimonials (`CustomerReviews.jsx`)**
-   - Interactive 5-star rating selector.
-   - Real-time review submission communicating with backend `/api/reviews`.
+   - Community review cards with verified buyer tags and star ratings.
+   - Interactive review submission form with live 5-star rating selector, saving feedback in `LocalStorage`.
 
 5. **Bakery Operations / Staff Portal (`AdminDashboard.jsx`)**
-   - Switchable via "Staff Portal" button in the top navigation.
-   - Live Orders Board with kitchen preparation status updates:
+   - Toggled via the **"Staff Portal"** button in the top navigation.
+   - Live kitchen orders board allowing staff to update order preparation status:
      `Pending` ➔ `Baking in Hearth` ➔ `Out for Delivery` ➔ `Delivered`.
-   - Publish new bakery items directly into the MongoDB catalog with form inputs.
-   - Live inventory inspection and deletion.
+   - Publish new bakery items directly into the live catalog using form controls.
+   - Catalog inventory manager to inspect or delete products.
 
-6. **Authentication & User Profiles (`AuthModal.jsx`, `AuthContext.jsx`)**
-   - User registration and login with secure password hashing (`bcryptjs`) and JSON Web Tokens (JWT).
-   - 1-Click quick demo auto-fill buttons for fast testing and viva demonstration.
+6. **Client-Side Authentication (`AuthModal.jsx`, `AuthContext.jsx`)**
+   - User sign-in and registration forms with validation and session persistence in `LocalStorage`.
+   - 1-Click **Demo Account Fillers** (`Demo Customer` and `Demo Admin`) for fast viva demonstrations.
 
 ---
 
-## 🛠️ Technology Stack
+## 🛠️ Technology Stack & Web Tech Concepts
 
-| Layer | Technology | Details |
+| Domain | Technology / Concept | Implementation Details |
 |---|---|---|
-| **Frontend** | React 18, Vite | Single Page Application (SPA), React Hooks, Context API |
-| **Styling** | Handcrafted Vanilla CSS | CSS Custom Properties, Flexbox, Grid, Micro-animations |
-| **Backend** | Node.js, Express.js | Modular REST API, MVC Architecture, CORS, JSON Parsers |
-| **Database** | MongoDB & Mongoose | Schemas, Validation, Timestamps, Pre-save bcrypt hooks |
-| **Auth** | JWT & Bcrypt.js | Cryptographic password hashing and signed tokens |
+| **Structure** | HTML5 Semantic Elements | `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>` |
+| **Styling** | Handcrafted Vanilla CSS | CSS Custom Properties (`:root`), Flexbox, CSS Grid, Media Queries |
+| **UI Framework** | React 18 & Vite | Single Page Application (SPA), Component Architecture, Fast HMR |
+| **State Management** | React Hooks & Context | `useState`, `useEffect`, `useContext`, `useMemo` |
+| **Persistence** | Browser `LocalStorage` API | Persistent storage for Cart, Orders, Reviews, and User Sessions |
+| **Icons** | Lucide React | Lightweight, accessible SVG icons |
 
 ---
 
@@ -62,36 +66,32 @@ A complete, responsive, full-stack bakery web application built using **MongoDB,
 ### Prerequisites:
 - **Node.js** (v18 or higher) installed on your system.
 
-### Step 1: Start the Backend Server (Port 5000)
-Open your terminal:
-```bash
-cd backend
-npm install
-npm run dev
-# Or run with node:
-# node server.js
-```
-The backend will launch at: `http://localhost:5000`
+### Step-by-Step Instructions:
+1. Open your terminal in this project directory:
+   ```powershell
+   cd d:\application_development\web_tech_project
+   ```
 
-> **Note on MongoDB:**
-> If you have local MongoDB or MongoDB Atlas, configure your connection URI in `backend/.env`. If MongoDB is offline, the backend automatically activates the integrated fallback store so the application runs without any interruptions during presentations!
+2. Install dependencies (only needs to be run once):
+   ```powershell
+   npm install
+   ```
 
-### Step 2: Start the Frontend Application (Port 5173)
-Open a second terminal:
-```bash
-cd frontend
-npm install
-npm run dev
-```
-Open your browser and visit: **`http://localhost:5173`**
+3. Start the Vite local development server:
+   ```powershell
+   npm run dev
+   ```
+
+4. Open your browser and visit:  
+   👉 **`http://localhost:5173`**
 
 ---
 
-## 🔑 Demo Credentials for Testing / Viva Evaluation
+## 🔑 Demo Credentials for Testing / Evaluation
 
 | Role | Email | Password | Access |
 |---|---|---|---|
-| **Demo Customer** | `customer@goldencrust.com` | `bakery123` | Browsing, ordering, reviewing |
+| **Demo Customer** | `customer@goldencrust.com` | `bakery123` | Browsing, ordering, submitting reviews |
 | **Bakery Staff (Admin)** | `admin@goldencrust.com` | `admin123` | Kitchen order statuses, catalog publishing |
 
 ### Available Promo Coupon Codes:
@@ -100,13 +100,6 @@ Open your browser and visit: **`http://localhost:5173`**
 
 ---
 
-## 📚 Viva Exam & Defense Guide
-
-Before your viva / project defense, make sure to read:
+## 📖 Viva Voce Defense Guide
+Be sure to read the comprehensive question bank and oral exam guide before your presentation:  
 👉 **[`VIVA_EXAM_GUIDE.md`](./VIVA_EXAM_GUIDE.md)**
-
-It contains:
-- Complete breakdown of every React hook used (`useState`, `useEffect`, `useContext`, `useMemo`).
-- Detailed explanation of JavaScript methods (`map`, `filter`, `reduce`, `find`).
-- Express and Mongoose architecture walkthrough.
-- Exact answers to **25 common viva questions** professors ask during project evaluations.

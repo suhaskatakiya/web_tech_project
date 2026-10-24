@@ -1,46 +1,40 @@
 /**
  * CustomerReviews Component
  * Displays genuine customer feedback, star ratings, and an interactive
- * review submission form communicating with backend /api/reviews.
+ * review submission form persisting feedback in LocalStorage.
  */
 
 import React, { useState, useEffect } from 'react';
-import { Star, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
+import { Star, MessageSquare, Send } from 'lucide-react';
+import { initialReviews } from '../data/bakeryData';
 
 export default function CustomerReviews() {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState(() => {
+    try {
+      const saved = localStorage.getItem('golden_crust_reviews');
+      return saved ? JSON.parse(saved) : initialReviews;
+    } catch {
+      return initialReviews;
+    }
+  });
 
   // Form State
   const [name, setName] = useState('');
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
-  const [itemReviewed, setItemReviewed] = useState('Artisan Bakery Experience');
-  const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Fetch reviews on mount
+  // Persist reviews to localStorage
   useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch('/api/reviews');
-        const data = await res.json();
-        if (data.success && Array.isArray(data.data)) {
-          setReviews(data.data);
-        }
-      } catch (err) {
-        console.error('Error fetching reviews:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      localStorage.setItem('golden_crust_reviews', JSON.stringify(reviews));
+    } catch (err) {
+      console.error('Failed to save reviews to localStorage:', err);
+    }
+  }, [reviews]);
 
-    fetchReviews();
-  }, []);
-
-  const handleSubmitReview = async (e) => {
+  const handleSubmitReview = (e) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
@@ -50,32 +44,19 @@ export default function CustomerReviews() {
       return;
     }
 
-    setSubmitting(true);
+    const newReview = {
+      _id: 'rev_' + Date.now(),
+      name: name.trim(),
+      rating: Number(rating),
+      comment: comment.trim(),
+      date: new Date().toISOString().split('T')[0]
+    };
 
-    try {
-      const res = await fetch('/api/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, rating, comment, itemReviewed })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to submit review');
-      }
-
-      // Prepend newly added review to the state
-      setReviews((prev) => [data.data, ...prev]);
-      setSuccessMsg('🎉 Thank you for your review! Your feedback warms our bakery.');
-      setName('');
-      setComment('');
-      setRating(5);
-    } catch (err) {
-      setErrorMsg(err.message || 'Error submitting review');
-    } finally {
-      setSubmitting(false);
-    }
+    setReviews((prev) => [newReview, ...prev]);
+    setSuccessMsg('🎉 Thank you for your review! Your feedback warms our bakery.');
+    setName('');
+    setComment('');
+    setRating(5);
   };
 
   return (
@@ -92,45 +73,41 @@ export default function CustomerReviews() {
         </div>
 
         {/* Reviews Grid */}
-        {loading ? (
-          <p style={{ textAlign: 'center', color: '#854d0e', padding: '2rem' }}>Loading reviews...</p>
-        ) : (
-          <div className="reviews-grid">
-            {reviews.map((r) => (
-              <div key={r._id || Math.random()} className="review-card">
-                <div>
-                  <div className="review-stars">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        size={16}
-                        fill={i < Math.floor(r.rating) ? '#f59e0b' : 'none'}
-                        color="#f59e0b"
-                      />
-                    ))}
-                    <span style={{ fontSize: '0.85rem', fontWeight: '700', marginLeft: '0.4rem', color: '#b45309' }}>
-                      {r.rating}.0
-                    </span>
-                  </div>
-
-                  <p className="review-comment">"{r.comment}"</p>
-                </div>
-
-                <div className="reviewer-meta">
-                  <div>
-                    <span className="reviewer-name">{r.name}</span>
-                    <span style={{ fontSize: '0.75rem', color: '#15803d', display: 'block', fontWeight: '600' }}>
-                      ✓ Verified Customer
-                    </span>
-                  </div>
-                  <span className="review-date">
-                    {r.date || (r.createdAt ? new Date(r.createdAt).toISOString().split('T')[0] : 'Recently')}
+        <div className="reviews-grid">
+          {reviews.map((r) => (
+            <div key={r._id || Math.random()} className="review-card">
+              <div>
+                <div className="review-stars">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={16}
+                      fill={i < Math.floor(r.rating) ? '#f59e0b' : 'none'}
+                      color="#f59e0b"
+                    />
+                  ))}
+                  <span style={{ fontSize: '0.85rem', fontWeight: '700', marginLeft: '0.4rem', color: '#b45309' }}>
+                    {r.rating}.0
                   </span>
                 </div>
+
+                <p className="review-comment">"{r.comment}"</p>
               </div>
-            ))}
-          </div>
-        )}
+
+              <div className="reviewer-meta">
+                <div>
+                  <span className="reviewer-name">{r.name}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#15803d', display: 'block', fontWeight: '600' }}>
+                    ✓ Verified Customer
+                  </span>
+                </div>
+                <span className="review-date">
+                  {r.date || 'Recently'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Add Review Box */}
         <div className="add-review-box">
@@ -208,11 +185,10 @@ export default function CustomerReviews() {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={submitting}
               id="submit-review-btn"
             >
               <Send size={16} />
-              <span>{submitting ? 'Posting...' : 'Submit Customer Review'}</span>
+              <span>Submit Customer Review</span>
             </button>
           </form>
         </div>

@@ -2,11 +2,11 @@
  * CustomCakeBuilder Component
  * Interactive celebration cake designer. Customers customize flavor,
  * weight, tiers, frosting, eggless preference, piped message, and date.
- * Features real-time price estimation and order submission.
+ * Features real-time price estimation and instant booking quote receipt.
  */
 
 import React, { useState } from 'react';
-import { Cake, Sparkles, Calendar, CheckCircle2, Heart } from 'lucide-react';
+import { Cake, Sparkles, CheckCircle2 } from 'lucide-react';
 
 const FLAVORS = [
   { id: 'Belgian Dark Truffle', name: 'Belgian Dark Truffle', desc: '70% Callebaut Ganache' },
@@ -42,11 +42,10 @@ export default function CustomCakeBuilder() {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
 
-  const [loading, setLoading] = useState(false);
   const [orderConfirmation, setOrderConfirmation] = useState(null);
   const [error, setError] = useState('');
 
-  // Calculate live dynamic price
+  // Calculate live dynamic price using formula
   const calculateEstimate = () => {
     const basePrice = 24.00;
     const weightObj = WEIGHTS.find((w) => w.value === Number(weight)) || WEIGHTS[1];
@@ -61,7 +60,7 @@ export default function CustomCakeBuilder() {
 
   const currentPrice = calculateEstimate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
 
@@ -70,37 +69,33 @@ export default function CustomCakeBuilder() {
       return;
     }
 
-    setLoading(true);
+    const quoteId = 'CAKE-' + Math.floor(1000 + Math.random() * 9000);
 
+    const quoteData = {
+      quoteId,
+      customerName,
+      customerPhone,
+      flavor,
+      weight: `${weight} kg`,
+      tiers,
+      frosting,
+      eggless: isEggless,
+      messageOnCake: messageOnCake || 'None',
+      dateNeeded,
+      estimatedPrice: `$${currentPrice}`,
+      createdAt: new Date().toISOString()
+    };
+
+    // Save into LocalStorage
     try {
-      const res = await fetch('/api/reviews/custom-cake', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          flavor,
-          weight,
-          tiers,
-          frosting,
-          eggless: isEggless,
-          messageOnCake,
-          dateNeeded,
-          customerName,
-          customerPhone
-        })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to submit cake inquiry');
-      }
-
-      setOrderConfirmation(data.quote);
+      const existingInquiries = JSON.parse(localStorage.getItem('golden_crust_cake_inquiries') || '[]');
+      existingInquiries.unshift(quoteData);
+      localStorage.setItem('golden_crust_cake_inquiries', JSON.stringify(existingInquiries));
     } catch (err) {
-      setError(err.message || 'Failed to submit cake order');
-    } finally {
-      setLoading(false);
+      console.error(err);
     }
+
+    setOrderConfirmation(quoteData);
   };
 
   return (
@@ -246,11 +241,10 @@ export default function CustomCakeBuilder() {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={loading}
               style={{ width: '100%', padding: '0.85rem' }}
               id="submit-cake-inquiry-btn"
             >
-              {loading ? 'Submitting Design...' : 'Book Custom Cake Inquiry Now'}
+              Book Custom Cake Inquiry Now
             </button>
           </form>
 

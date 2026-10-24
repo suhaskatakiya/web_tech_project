@@ -1,16 +1,17 @@
 /**
  * CheckoutModal Component
- * Collects delivery address and payment choice, submits order to backend API,
+ * Collects delivery address and payment choice, records order in LocalStorage,
  * and renders an elegant order confirmation receipt upon completion.
  */
 
 import React, { useState } from 'react';
-import { X, CheckCircle, Truck, CreditCard, Banknote, QrCode } from 'lucide-react';
+import { X, CheckCircle, CreditCard, Banknote, QrCode } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { initialOrders } from '../data/bakeryData';
 
 export default function CheckoutModal({ isOpen, onClose }) {
-  const { cart, subtotal, discountAmount, deliveryFee, finalTotal, couponCode, clearCart } = useCart();
+  const { cart, subtotal, discountAmount, deliveryFee, finalTotal, clearCart } = useCart();
   const { user } = useAuth();
 
   const [customerName, setCustomerName] = useState(user?.name || '');
@@ -20,15 +21,13 @@ export default function CheckoutModal({ isOpen, onClose }) {
   const [city, setCity] = useState('Downtown');
   const [postalCode, setPostalCode] = useState('560001');
   const [paymentMethod, setPaymentMethod] = useState('COD');
-  const [specialInstructions, setSpecialInstructions] = useState('');
 
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [confirmedOrder, setConfirmedOrder] = useState(null);
 
   if (!isOpen) return null;
 
-  const handlePlaceOrder = async (e) => {
+  const handlePlaceOrder = (e) => {
     e.preventDefault();
     setError('');
 
@@ -42,45 +41,40 @@ export default function CheckoutModal({ isOpen, onClose }) {
       return;
     }
 
-    setLoading(true);
+    const newOrder = {
+      _id: 'ord_' + Date.now(),
+      orderId: 'GCB-' + Math.floor(100000 + Math.random() * 900000),
+      customerName,
+      customerEmail,
+      customerPhone,
+      deliveryAddress: { street, city, postalCode },
+      items: cart.map((item) => ({
+        name: item.product.name,
+        price: item.product.price,
+        quantity: item.quantity,
+        image: item.product.image
+      })),
+      subtotal,
+      discount: discountAmount,
+      deliveryFee,
+      totalAmount: finalTotal,
+      paymentMethod,
+      status: 'Pending',
+      estimatedDelivery: '35 - 50 mins',
+      createdAt: new Date().toISOString()
+    };
 
+    // Save into LocalStorage for Staff Kitchen Portal
     try {
-      const orderPayload = {
-        customerName,
-        customerEmail,
-        customerPhone,
-        deliveryAddress: { street, city, postalCode },
-        items: cart.map((item) => ({
-          product: item.product._id,
-          name: item.product.name,
-          price: item.product.price,
-          quantity: item.quantity,
-          image: item.product.image
-        })),
-        paymentMethod,
-        specialInstructions,
-        couponCode
-      };
-
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload)
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to place order.');
-      }
-
-      setConfirmedOrder(data.data);
-      clearCart();
+      const savedOrders = JSON.parse(localStorage.getItem('golden_crust_orders') || 'null') || initialOrders;
+      const updatedOrders = [newOrder, ...savedOrders];
+      localStorage.setItem('golden_crust_orders', JSON.stringify(updatedOrders));
     } catch (err) {
-      setError(err.message || 'Order failed. Please check backend connection.');
-    } finally {
-      setLoading(false);
+      console.error('Failed to save order to localStorage:', err);
     }
+
+    setConfirmedOrder(newOrder);
+    clearCart();
   };
 
   const handleFinish = () => {
@@ -292,11 +286,10 @@ export default function CheckoutModal({ isOpen, onClose }) {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={loading}
                 style={{ width: '100%', padding: '0.85rem' }}
                 id="place-order-submit-btn"
               >
-                {loading ? 'Processing Bakery Order...' : `Confirm & Place Order ($${finalTotal.toFixed(2)})`}
+                Confirm & Place Order (${finalTotal.toFixed(2)})
               </button>
             </form>
           </div>
